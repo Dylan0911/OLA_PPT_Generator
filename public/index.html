@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>弥撒PPT生成</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="bgFx" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
+    <main class="shell">
+      <section class="panel">
+        <header class="topbar">
+          <div class="brandLockup">
+            <span class="logoFrame">
+              <img class="brandLogo" src="/ola-logo.png" alt="Our Lady of the Angels Parish" />
+            </span>
+            <div class="brandText">
+              <p class="eyebrow">Our Lady of the Angels</p>
+              <h1>弥撒PPT生成</h1>
+            </div>
+          </div>
+        </header>
+
+        <form id="uploadForm" class="upload" enctype="multipart/form-data">
+          <label class="dropzone" for="document">
+            <input id="document" name="document" type="file" accept=".txt,.md,.docx" required />
+            <span class="dropIcon">+</span>
+            <span class="dropTitle" id="fileName">上传 Word 文档</span>
+            <span class="dropMeta">自动填入模板，生成 PPTX</span>
+          </label>
+
+          <div class="actions">
+            <button class="primary" type="submit" id="generateButton">
+              <span>生成 PPT</span>
+            </button>
+            <a class="secondary" href="/template">下载模板</a>
+          </div>
+
+          <div class="themePicker">
+            <div class="themeHead">
+              <span class="themeTitle">主题色</span>
+              <span class="themeMeta">默认沿用模板原色 · 选节期可改色</span>
+            </div>
+            <div class="seasonRow" id="seasons">
+              <button type="button" class="season" data-color="#55725D"><span class="seasonDot" style="--c:#55725D"></span>常年期</button>
+              <button type="button" class="season" data-color="#BF913B"><span class="seasonDot" style="--c:#BF913B"></span>四旬期</button>
+              <button type="button" class="season" data-color="#5E4A9E"><span class="seasonDot" style="--c:#5E4A9E"></span>将临期</button>
+              <button type="button" class="season" data-color="#C9A227"><span class="seasonDot" style="--c:#C9A227"></span>复活期</button>
+              <button type="button" class="season" data-color="#B3262A"><span class="seasonDot" style="--c:#B3262A"></span>圣神降临</button>
+            </div>
+            <div class="themeControls">
+              <div class="swatches" id="swatches">
+                <button type="button" class="swatch" data-color="#BF913B" style="--c:#BF913B" aria-label="金棕"></button>
+                <button type="button" class="swatch" data-color="#1F4E79" style="--c:#1F4E79" aria-label="蓝"></button>
+                <button type="button" class="swatch" data-color="#2E7D32" style="--c:#2E7D32" aria-label="绿"></button>
+                <button type="button" class="swatch" data-color="#7B2D8B" style="--c:#7B2D8B" aria-label="紫"></button>
+                <button type="button" class="swatch" data-color="#B3262A" style="--c:#B3262A" aria-label="红"></button>
+                <button type="button" class="swatch" data-color="#0F6E6E" style="--c:#0F6E6E" aria-label="青"></button>
+                <button type="button" class="swatch" data-color="#C45B7C" style="--c:#C45B7C" aria-label="玫红"></button>
+                <button type="button" class="swatch" data-color="#37474F" style="--c:#37474F" aria-label="深蓝灰"></button>
+              </div>
+              <div class="customColor">
+                <label class="colorWell" id="colorWell" for="themeColor" style="--c:#55725D">
+                  <input type="color" id="themeColor" name="themeColor" value="#55725D" />
+                </label>
+                <input
+                  type="text"
+                  id="hexInput"
+                  class="hexInput"
+                  value="#55725D"
+                  maxlength="7"
+                  spellcheck="false"
+                  autocomplete="off"
+                  aria-label="颜色色号"
+                />
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <section class="status" aria-live="polite">
+          <div class="statusLine">
+            <span id="stateDot" class="dot idle"></span>
+            <span id="statusText">等待文档</span>
+          </div>
+        </section>
+
+        <section id="details" class="details hidden">
+          <div class="detailStats">
+            <div class="stat stat--title">
+              <p class="label">标题</p>
+              <p id="titleValue" class="statValue"></p>
+            </div>
+            <div class="stat stat--count">
+              <p class="label">页数</p>
+              <p id="slidesValue" class="statValue"></p>
+            </div>
+            <div class="stat">
+              <p class="label">缺少段落</p>
+              <p id="missingValue" class="statValue"></p>
+            </div>
+          </div>
+          <div id="fillListWrap" class="fillList hidden">
+            <p class="label">需手动填入的页</p>
+            <ul id="fillListValue"></ul>
+          </div>
+          <div class="detailDownload">
+            <a id="downloadLink" class="download hidden" href="#">下载 PPT</a>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

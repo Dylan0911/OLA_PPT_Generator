@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>预检 · 手动纠正 — Demo</title>
+    <style>
+      :root {
+        --ink: #16241c;
+        --muted: #51655b;
+        --accent: #3f7e63;
+        --accent-soft: #d9ecdf;
+        --ok: #2f8f5b;
+        --warn: #c98a14;
+        --err: #c4503e;
+        --radius: 26px;
+        --radius-sm: 16px;
+        --glass: linear-gradient(150deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.34));
+        --glass-strong: linear-gradient(150deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55));
+        --hair: rgba(255, 255, 255, 0.6);
+        --sheen: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(255, 255, 255, 0.25);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: ui-sans-serif, -apple-system, "PingFang SC", "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
+        background: #0c1a12;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        background: url("/church-background-enhanced.jpg") center/cover no-repeat;
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background:
+          radial-gradient(120% 80% at 50% 0%, rgba(63, 126, 99, 0.42), transparent 60%),
+          linear-gradient(180deg, rgba(7, 20, 13, 0.34), rgba(7, 20, 13, 0.6));
+      }
+      .wrap { max-width: 940px; margin: 0 auto; padding: 34px 20px 80px; }
+
+      .glass {
+        background: var(--glass);
+        backdrop-filter: blur(34px) saturate(185%);
+        -webkit-backdrop-filter: blur(34px) saturate(185%);
+        border: 1px solid var(--hair);
+        border-radius: var(--radius);
+        box-shadow: 0 22px 60px rgba(6, 20, 13, 0.36), var(--sheen);
+      }
+
+      .topbar { padding: 22px 26px; margin-bottom: 18px; display: flex; align-items: center; gap: 18px; }
+      .badge {
+        flex: 0 0 auto; width: 52px; height: 52px; border-radius: 16px;
+        display: grid; place-items: center; color: #fff; font-size: 24px; font-weight: 800;
+        background: linear-gradient(150deg, #5a9c7b, #2f6b50);
+        box-shadow: 0 10px 24px rgba(31, 86, 62, 0.4), var(--sheen);
+      }
+      .topbar h1 { margin: 0; font-size: 21px; font-weight: 800; letter-spacing: 0.2px; }
+      .topbar p { margin: 3px 0 0; font-size: 13px; color: var(--muted); font-weight: 600; }
+      .step { margin-left: auto; font-size: 12px; color: var(--muted); font-weight: 700; text-align: right; line-height: 1.5; }
+      .step b { color: var(--accent); }
+
+      .docline { padding: 16px 22px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+      .docline .lbl { font-size: 12px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+      .docline input {
+        flex: 1; min-width: 220px; border: 1px solid rgba(63, 126, 99, 0.28); background: rgba(255, 255, 255, 0.7);
+        border-radius: 12px; padding: 9px 14px; font-size: 15px; font-weight: 700; color: var(--ink);
+      }
+      .docline input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(63, 126, 99, 0.18); }
+
+      .section { padding: 0; margin-bottom: 14px; overflow: hidden; }
+      .secHead { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.45); }
+      .grip { color: rgba(63, 126, 99, 0.55); font-size: 18px; cursor: grab; user-select: none; }
+      select.sec {
+        appearance: none; border: 1px solid rgba(63, 126, 99, 0.3); background: rgba(255, 255, 255, 0.78);
+        border-radius: 11px; padding: 7px 30px 7px 13px; font-size: 15px; font-weight: 800; color: var(--ink); cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%233f7e63' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 11px center;
+      }
+      select.sec:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(63, 126, 99, 0.16); }
+      .en { color: var(--muted); font-size: 13px; font-weight: 700; }
+      .chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; padding: 5px 11px; border-radius: 999px; }
+      .chip.ok { background: rgba(47, 143, 91, 0.16); color: #1f6b43; }
+      .chip.warn { background: rgba(201, 138, 20, 0.18); color: #8a5e08; }
+      .chip.err { background: rgba(196, 80, 62, 0.16); color: #97311f; }
+      .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+      .pill { font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 999px; background: rgba(63, 126, 99, 0.14); color: var(--accent); }
+      .spacer { margin-left: auto; }
+
+      .pair { display: grid; grid-template-columns: 1fr 1fr; }
+      .pair .col { padding: 14px 18px; }
+      .pair .col + .col { border-left: 1px dashed rgba(63, 126, 99, 0.28); }
+      .col label { display: block; font-size: 11px; font-weight: 800; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.4px; }
+      .col textarea {
+        width: 100%; min-height: 74px; resize: vertical; border: 1px solid rgba(63, 126, 99, 0.2);
+        border-radius: 12px; padding: 10px 12px; font-size: 14px; line-height: 1.6; color: var(--ink);
+        background: rgba(255, 255, 255, 0.62); font-family: inherit;
+      }
+      .col textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(63, 126, 99, 0.15); background: rgba(255, 255, 255, 0.8); }
+      .col.empty textarea { background: rgba(196, 80, 62, 0.06); border-style: dashed; }
+
+      .binTitle { padding: 14px 20px 4px; font-size: 13px; font-weight: 800; color: var(--err); display: flex; align-items: center; gap: 8px; }
+      .binItem { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-top: 1px solid rgba(255, 255, 255, 0.4); }
+      .binItem span { flex: 1; font-size: 14px; color: var(--ink); }
+      .binItem select { font-size: 13px; padding: 6px 26px 6px 11px; }
+
+      .footer {
+        position: sticky; bottom: 16px; margin-top: 22px; padding: 16px 22px;
+        display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+        background: var(--glass-strong);
+      }
+      .stat { font-size: 13px; font-weight: 700; color: var(--muted); }
+      .stat b { color: var(--ink); font-size: 16px; }
+      .stat.warnN b { color: var(--warn); }
+      .cta {
+        margin-left: auto; border: 0; cursor: pointer; color: #fff; font-size: 16px; font-weight: 800;
+        padding: 13px 26px; border-radius: 15px;
+        background: linear-gradient(150deg, #5a9c7b, #2f6b50);
+        box-shadow: 0 14px 30px rgba(31, 86, 62, 0.42), var(--sheen);
+        transition: transform 160ms ease, box-shadow 160ms ease, filter 160ms ease;
+      }
+      .cta:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 20px 40px rgba(31, 86, 62, 0.5); }
+      .cta:active { transform: translateY(0); }
+
+      .toast {
+        position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(20px);
+        background: linear-gradient(150deg, rgba(47, 107, 80, 0.95), rgba(34, 84, 62, 0.95));
+        color: #fff; font-weight: 800; padding: 14px 24px; border-radius: 16px; font-size: 15px;
+        box-shadow: 0 18px 44px rgba(6, 20, 13, 0.5), var(--sheen);
+        opacity: 0; pointer-events: none; transition: opacity 260ms ease, transform 260ms ease; z-index: 50;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .demoTag { position: fixed; top: 14px; right: 16px; font-size: 11px; font-weight: 800; color: #fff; background: rgba(0,0,0,0.32); padding: 6px 12px; border-radius: 999px; backdrop-filter: blur(8px); z-index: 40; }
+      @media (max-width: 680px) { .pair { grid-template-columns: 1fr; } .pair .col + .col { border-left: 0; border-top: 1px dashed rgba(63,126,99,0.28); } }
+    </style>
+  </head>
+  <body>
+    <div class="demoTag">DEMO · 示意数据</div>
+    <div class="wrap">
+      <div class="topbar glass">
+        <div class="badge">✓</div>
+        <div>
+          <h1>预检 · 手动纠正</h1>
+          <p>生成前先核对：每段被分到哪个环节、中英怎么配对。改好再生成。</p>
+        </div>
+        <div class="step">第 <b>2</b> / 3 步<br />解析 → <b>核对</b> → 生成</div>
+      </div>
+
+      <div class="docline glass">
+        <span class="lbl">标题</span>
+        <input id="titleCn" value="常年期第十二主日（甲年）" />
+        <input id="titleEn" value="12th Sunday in Ordinary Time — Year A" />
+      </div>
+
+      <div id="list"></div>
+
+      <div class="footer glass">
+        <div class="stat"><b id="nSec">0</b> 个环节</div>
+        <div class="stat warnN"><b id="nWarn">0</b> 处待确认</div>
+        <div class="stat"><b id="nBin">0</b> 未匹配</div>
+        <button class="cta" id="cta">确认并生成 PPT →</button>
+      </div>
+    </div>
+    <div class="toast" id="toast">已确认，开始生成…（示意）</div>
+
+    <script>
+      const OPTIONS = ["进堂咏","集祷经","读经一","答唱咏","读经二","福音前欢呼","福音","信经","信友祷文","献礼经","领主咏","领圣体后经","降福","— 忽略此段 —"];
+      const sections = [
+        { id:"s1", name:"进堂咏", en:"Entrance Hymn", status:"ok", tag:"诗行",
+          cn:"耶稣是主，天地万物同宣布，\n祂亲手栽插花和树 细心保护。\n耶稣是主！赞美祂，阿肋路亚因耶稣是主。", en:"" },
+        { id:"s2", name:"读经一", en:"First Reading", status:"ok", tag:"读经",
+          cn:"恭读耶肋米亚先知书\n耶肋米亚说：我听到很多人的耳语：「惊慌四起！你们揭发他罢！」\n但是，上主与我同在，他好像一位孔武有力的战士。\n——上主的圣言。",
+          en:"A reading from the Book of the Prophet Jeremiah\nJeremiah said: I hear the whisperings of many: “Terror on every side! Denounce! Let us denounce him!”\nBut the Lord is with me, like a mighty champion.\nThe word of the Lord." },
+        { id:"s3", name:"答唱咏", en:"Responsorial Psalm", status:"warn", tag:"诗行",
+          cn:"答：天主，你是慈爱的，求你俯允我。\n领：上主，我为了你饱受轻慢，害得我满面羞惭。\n领：我对你的圣殿满怀热忱，而致心力交瘁。",
+          en:"R. Lord, in your great love, answer me.\nFor your sake I bear insult, and shame covers my face." },
+        { id:"s4", name:"福音", en:"Gospel", status:"ok", tag:"读经",
+          cn:"恭读圣玛窦福音\n那时候，耶稣对宗徒们说：「你们在人面前不要害怕；因为没有一件掩盖的事，将来不被揭露的。」\n基督的福音。",
+          en:"A reading from the holy Gospel according to Matthew\nJesus said to his apostles: “Fear no one. Nothing is concealed that will not be revealed.”\nThe Gospel of the Lord." },
+      ];
+      const bin = [
+        { id:"b1", cn:"主日学下周复课，请家长留意堂区通知栏。", en:"" },
+      ];
+
+      const list = document.getElementById("list");
+      const esc = (s) => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      const optionsHtml = (sel) => OPTIONS.map(o => `<option ${o===sel?"selected":""}>${o}</option>`).join("");
+
+      function chipHtml(status) {
+        if (status === "ok") return `<span class="chip ok"><span class="dot"></span>自动识别</span>`;
+        if (status === "warn") return `<span class="chip warn"><span class="dot"></span>中英行数不一致 · 请确认</span>`;
+        return `<span class="chip err"><span class="dot"></span>未匹配</span>`;
+      }
+
+      function render() {
+        list.innerHTML = "";
+        sections.forEach((s) => {
+          const el = document.createElement("div");
+          el.className = "section glass";
+          const enEmpty = !s.en.trim();
+          el.innerHTML = `
+            <div class="secHead">
+              <span class="grip">⋮⋮</span>
+              <select class="sec" data-id="${s.id}">${optionsHtml(s.name)}</select>
+              <span class="en">${esc(s.en)}</span>
+              <span class="pill">${s.tag}</span>
+              <span class="spacer"></span>
+              ${chipHtml(s.status)}
+            </div>
+            <div class="pair">
+              <div class="col"><label>中文</label><textarea data-id="${s.id}" data-lang="cn">${esc(s.cn)}</textarea></div>
+              <div class="col ${enEmpty ? "empty" : ""}"><label>英文${enEmpty ? "（此段无对应英文）" : ""}</label><textarea data-id="${s.id}" data-lang="en" placeholder="留空 = 这一页右侧不放英文">${esc(s.en)}</textarea></div>
+            </div>`;
+          list.appendChild(el);
+        });
+
+        if (bin.length) {
+          const b = document.createElement("div");
+          b.className = "section glass";
+          b.innerHTML = `<div class="binTitle">⚠ 未匹配段落（${bin.length}）— 指派到某个环节，或忽略</div>` +
+            bin.map(item => `
+              <div class="binItem">
+                <span>${esc(item.cn || item.en)}</span>
+                <select class="assign" data-id="${item.id}">
+                  <option value="">指派到…</option>
+                  ${OPTIONS.map(o => `<option>${o}</option>`).join("")}
+                </select>
+              </div>`).join("");
+          list.appendChild(b);
+        }
+        wire();
+        updateStats();
+      }
+
+      function wire() {
+        list.querySelectorAll("select.sec").forEach(sel => {
+          sel.onchange = () => {
+            const s = sections.find(x => x.id === sel.dataset.id);
+            s.name = sel.value;
+            if (sel.value === "— 忽略此段 —") s.status = "err";
+            else if (s.status === "err") s.status = "ok";
+            const head = sel.closest(".secHead");
+            head.querySelector(".chip")?.replaceWith(htmlToNode(chipHtml(s.status)));
+            updateStats();
+          };
+        });
+        list.querySelectorAll("textarea").forEach(ta => {
+          ta.oninput = () => {
+            const s = sections.find(x => x.id === ta.dataset.id);
+            s[ta.dataset.lang] = ta.value;
+          };
+        });
+        list.querySelectorAll("select.assign").forEach(sel => {
+          sel.onchange = () => {
+            if (!sel.value) return;
+            const idx = bin.findIndex(x => x.id === sel.dataset.id);
+            const item = bin.splice(idx, 1)[0];
+            sections.push({ id: item.id, name: sel.value, en:"", status:"ok", tag:"读经", cn:item.cn, en:item.en || "" });
+            render();
+          };
+        });
+      }
+
+      function htmlToNode(html) { const t = document.createElement("template"); t.innerHTML = html.trim(); return t.content.firstChild; }
+      function updateStats() {
+        document.getElementById("nSec").textContent = sections.filter(s => s.name !== "— 忽略此段 —").length;
+        document.getElementById("nWarn").textContent = sections.filter(s => s.status === "warn").length;
+        document.getElementById("nBin").textContent = bin.length;
+      }
+
+      document.getElementById("cta").onclick = () => {
+        const t = document.getElementById("toast");
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 2200);
+      };
+
+      render();
+    </script>
+  </body>
+</html>

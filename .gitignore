@@ -1,0 +1,17 @@
+# 依赖
+node_modules/
+
+# 运行产物：上传的礼仪文档 + 生成的 PPT（私密，勿公开）
+runs/
+
+# 系统/临时文件
+.DS_Store
+**/.DS_Store
+*.log
+.~*
+assets/.~*.pptx
+
+# 体积较大的备份 / 旧版模板（只保留在用的核心模板）
+assets/_backup_*
+assets/template.pptx
+assets/常年期弥撒模板_占位符版.pptx

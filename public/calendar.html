@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>礼仪日历 · Liturgical Calendar</title>
+    <style>
+      :root {
+        --accent: #4f7e63;
+        --vest: #4f7e63;
+        --accent-soft: #e0ece4;
+        --ink: #13241b;
+        --muted: #54675c;
+        --radius: 30px;
+        --sheen: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(255, 255, 255, 0.22);
+        --glass: linear-gradient(155deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.26));
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: ui-sans-serif, -apple-system, "PingFang SC", "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
+        background: #0a1611;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -3;
+        background: url("/church-interior.jpg") center 62%/cover no-repeat;
+        filter: saturate(1.08) contrast(1.05);
+      }
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        background: linear-gradient(180deg, rgba(5, 14, 10, 0.18), rgba(5, 14, 10, 0.4));
+        transition: background 600ms ease;
+      }
+      .glow {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(55% 45% at 50% 16%, var(--accent), transparent 68%);
+        opacity: 0.32;
+        transition: background 600ms ease;
+      }
+      .wrap { max-width: 880px; margin: 0 auto; padding: 36px 20px 70px; }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 20px 26px;
+        margin-bottom: 18px;
+        border-radius: var(--radius);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: var(--glass);
+        box-shadow: 0 24px 64px rgba(5, 18, 12, 0.36), var(--sheen);
+        backdrop-filter: blur(40px) saturate(190%);
+        -webkit-backdrop-filter: blur(40px) saturate(190%);
+      }
+      .topbar h1 { margin: 0; font-size: 22px; font-weight: 850; letter-spacing: 0.3px; }
+      .topbar .en { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+      .controls { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+      input[type="date"] {
+        border: 1px solid rgba(0, 0, 0, 0.12); border-radius: 12px; padding: 9px 12px;
+        font-size: 15px; font-weight: 700; color: var(--ink); background: rgba(255, 255, 255, 0.8); font-family: inherit;
+      }
+      input[type="date"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 28%, transparent); }
+      .nav, .today {
+        border: 1px solid rgba(255, 255, 255, 0.6); background: rgba(255, 255, 255, 0.7);
+        border-radius: 12px; cursor: pointer; font-weight: 800; color: var(--ink);
+        height: 38px; transition: transform 140ms ease, background 140ms ease;
+      }
+      .nav { width: 38px; font-size: 18px; }
+      .today { padding: 0 14px; font-size: 14px; }
+      .nav:hover, .today:hover { transform: translateY(-2px); background: rgba(255, 255, 255, 0.92); }
+
+      .stage {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 18px;
+        align-items: stretch;
+      }
+      .card {
+        position: relative;
+        overflow: hidden;
+        padding: 30px 30px 26px;
+        border-radius: var(--radius);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: var(--glass);
+        box-shadow: 0 30px 80px rgba(5, 18, 12, 0.4), var(--sheen);
+        backdrop-filter: blur(42px) saturate(195%);
+        -webkit-backdrop-filter: blur(42px) saturate(195%);
+      }
+      .card::before {
+        content: "";
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 7px;
+        background: var(--accent);
+        transition: background 500ms ease;
+      }
+      .season-pill {
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 850;
+        color: #fff; background: var(--accent);
+        box-shadow: var(--sheen); transition: background 500ms ease;
+      }
+      .season-pill .d { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, 0.9); }
+      .dateline { margin: 16px 0 4px; font-size: 14px; font-weight: 750; color: var(--muted); }
+      .name-cn { margin: 2px 0 4px; font-size: 34px; line-height: 1.12; font-weight: 850; letter-spacing: 0.4px; }
+      .name-en { margin: 0; font-size: 15px; font-weight: 700; color: var(--muted); }
+      .facts { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+      .fact {
+        flex: 1 1 120px; min-width: 110px;
+        padding: 13px 16px; border-radius: 16px;
+        background: rgba(255, 255, 255, 0.5); border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: var(--sheen);
+      }
+      .fact .k { font-size: 11px; font-weight: 850; letter-spacing: 0.6px; color: var(--muted); text-transform: uppercase; }
+      .fact .v { margin-top: 4px; font-size: 18px; font-weight: 850; }
+      .fact .v .swatch { display: inline-block; width: 13px; height: 13px; border-radius: 4px; vertical-align: -1px; margin-right: 6px; background: var(--vest); transition: background 500ms ease; }
+      .memo { margin: 8px 0 0; font-size: 13px; font-weight: 700; color: var(--muted); }
+      .badge { display: inline-flex; align-items: center; margin-top: 18px; padding: 7px 14px; border-radius: 999px; font-size: 13px; font-weight: 850; color: #fff; background: var(--vest); box-shadow: var(--sheen); transition: background 500ms ease; }
+      .badge + .cta { margin-top: 14px; }
+      .cta {
+        display: inline-flex; align-items: center; gap: 8px; margin-top: 22px;
+        padding: 12px 20px; border-radius: 14px; text-decoration: none; cursor: pointer;
+        font-size: 15px; font-weight: 850; color: #fff; background: var(--vest);
+        box-shadow: 0 14px 30px color-mix(in srgb, var(--vest) 45%, transparent), var(--sheen);
+        transition: transform 160ms ease, background 500ms ease, filter 160ms ease;
+      }
+      .cta:hover { transform: translateY(-2px); filter: brightness(1.06); }
+
+      .wheelCard {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        padding: 22px;
+        border-radius: var(--radius);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        background: var(--glass);
+        box-shadow: 0 30px 80px rgba(5, 18, 12, 0.4), var(--sheen);
+        backdrop-filter: blur(42px) saturate(195%);
+        -webkit-backdrop-filter: blur(42px) saturate(195%);
+      }
+      .wheelCard .cap { font-size: 12px; font-weight: 850; letter-spacing: 1px; color: var(--muted); text-transform: uppercase; margin-bottom: 6px; }
+      svg.wheel { width: 100%; max-width: 280px; height: auto; }
+      .wheel .seg { transition: stroke 500ms ease; }
+      .wheel-c-cn { font: 850 26px ui-sans-serif, system-ui, sans-serif; }
+      .wheel-c-color { font: 750 13px ui-sans-serif, system-ui, sans-serif; }
+
+      @media (max-width: 720px) {
+        .stage { grid-template-columns: 1fr; }
+        .name-cn { font-size: 28px; }
+        .controls { width: 100%; margin-left: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="glow" aria-hidden="true"></div>
+    <div class="wrap">
+      <header class="topbar">
+        <div>
+          <h1>礼仪日历</h1>
+          <span class="en">Liturgical Calendar · Australia</span>
+        </div>
+        <div class="controls">
+          <button class="nav" id="prev" aria-label="前一天">‹</button>
+          <input type="date" id="date" />
+          <button class="nav" id="next" aria-label="后一天">›</button>
+          <button class="today" id="todayBtn">今天</button>
+        </div>
+      </header>
+
+      <div class="stage">
+        <section class="card" id="card" aria-live="polite"></section>
+        <aside class="wheelCard">
+          <div class="cap">礼仪年 · 此刻所在</div>
+          <svg class="wheel" id="wheel" viewBox="0 0 240 240" role="img" aria-label="礼仪年轮盘"></svg>
+        </aside>
+      </div>
+    </div>
+
+    <script>
+      const card = document.getElementById("card");
+      const wheel = document.getElementById("wheel");
+      const dateInput = document.getElementById("date");
+
+      const todayISO = () => new Date().toISOString().slice(0, 10);
+      const shiftISO = (iso, days) => {
+        const t = Date.UTC(...iso.split("-").map((n, i) => (i === 1 ? +n - 1 : +n)));
+        return new Date(t + days * 86400000).toISOString().slice(0, 10);
+      };
+
+      function polar(cx, cy, r, frac) {
+        const ang = (frac * 360 - 90) * (Math.PI / 180);
+        return [cx + r * Math.cos(ang), cy + r * Math.sin(ang)];
+      }
+      function arc(cx, cy, r, f0, f1) {
+        const [x0, y0] = polar(cx, cy, r, f0);
+        const [x1, y1] = polar(cx, cy, r, f1);
+        const large = f1 - f0 > 0.5 ? 1 : 0;
+        return `M ${x0} ${y0} A ${r} ${r} 0 ${large} 1 ${x1} ${y1}`;
+      }
+
+      function renderWheel(data) {
+        const cx = 120, cy = 120, r = 92;
+        const segs = data.ring.segments
+          .filter((s) => s.end > s.start + 0.001)
+          .map((s) => `<path class="seg" d="${arc(cx, cy, r, s.start, Math.min(s.end, 0.9999))}" stroke="${s.hex}" stroke-width="20" fill="none" stroke-linecap="butt"/>`)
+          .join("");
+        const [mx, my] = polar(cx, cy, r, data.ring.marker);
+        const marker = `
+          <circle cx="${mx}" cy="${my}" r="11" fill="#fff" opacity="0.55"/>
+          <circle cx="${mx}" cy="${my}" r="7.5" fill="${data.colorHex}" stroke="#fff" stroke-width="3"/>`;
+        wheel.innerHTML = `
+          ${segs}
+          ${marker}
+          <text class="wheel-c-cn" x="120" y="114" text-anchor="middle" fill="${data.seasonHex}">${data.seasonCn}</text>
+          <text class="wheel-c-color" x="120" y="136" text-anchor="middle" fill="var(--muted)">礼仪季节</text>`;
+      }
+
+      function applyTheme(d) {
+        const root = document.documentElement;
+        root.style.setProperty("--accent", d.seasonHex); // 整页/卡片/轮盘 = 季节色（同一节期稳定不变）
+        root.style.setProperty("--vest", d.colorHex); // 祭衣色 = 当日礼仪色（只有大庆日/庆节才不同）
+      }
+
+      function renderCard(d) {
+        const cyc = d.cycle
+          ? `<div class="fact"><div class="k">读经年</div><div class="v">${d.cycleCn || d.cycle}<span style="font-size:13px;color:var(--muted)"> · ${d.cycle}</span></div></div>`
+          : "";
+        const psalter =
+          typeof d.psalterWeek === "number" && d.psalterWeek >= 1 && d.psalterWeek <= 4
+            ? `<div class="fact"><div class="k">圣咏周</div><div class="v">第 ${d.psalterWeek} 周</div></div>`
+            : "";
+        const enLine = d.nameEn && d.nameEn !== d.nameCn ? `<p class="name-en">${d.nameEn}</p>` : "";
+        const special = d.special ? `<span class="badge">今日${d.rankCn || "庆日"} · 礼仪色 ${d.colorCn}</span>` : "";
+        card.innerHTML = `
+          <span class="season-pill"><span class="d"></span>${d.seasonCn} · ${d.seasonEn}</span>
+          <p class="dateline">${d.date} ${d.weekdayCn}</p>
+          <h2 class="name-cn">${d.nameCn}</h2>
+          ${enLine}
+          <div class="facts">
+            <div class="fact"><div class="k">礼仪色</div><div class="v"><span class="swatch"></span>${d.colorCn}</div></div>
+            ${cyc}
+            ${psalter}
+          </div>
+          ${special}
+          <a class="cta" href="/?color=${encodeURIComponent(d.colorHex)}">用此礼仪色生成 PPT →</a>`;
+      }
+
+      async function load(iso) {
+        dateInput.value = iso;
+        try {
+          const res = await fetch(`/api/liturgy?date=${iso}`);
+          const d = await res.json();
+          if (d.error) { card.innerHTML = `<p class="name-cn">无数据</p>`; return; }
+          applyTheme(d);
+          renderCard(d);
+          renderWheel(d);
+        } catch (e) {
+          card.innerHTML = `<p class="name-cn">读取失败</p><p class="name-en">${e.message}</p>`;
+        }
+      }
+
+      document.getElementById("prev").onclick = () => load(shiftISO(dateInput.value, -1));
+      document.getElementById("next").onclick = () => load(shiftISO(dateInput.value, 1));
+      document.getElementById("todayBtn").onclick = () => load(todayISO());
+      dateInput.onchange = () => load(dateInput.value);
+
+      const initDate = new URLSearchParams(location.search).get("date");
+      load(/^\d{4}-\d{2}-\d{2}$/.test(initDate || "") ? initDate : todayISO());
+    </script>
+  </body>
+</html>
