@@ -1,0 +1,13 @@
+# Render 一键部署蓝图（Blueprint）
+# 用法：Render 控制台 → New → Blueprint → 选这个 GitHub 仓库 → Apply。
+# Render 会自动注入 PORT；HOST=0.0.0.0 让服务对外可访问。
+services:
+  - type: web
+    name: ola-ppt-generator
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: HOST
+        value: 0.0.0.0

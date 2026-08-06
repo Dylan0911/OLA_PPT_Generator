@@ -431,6 +431,7 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, "127.0.0.1", () => {
-  console.log(`Liturgy PPT tool running at http://127.0.0.1:${PORT}`);
+const HOST = process.env.HOST || "127.0.0.1"; // 部署时由主机设为 0.0.0.0 对外；本地默认仅本机
+server.listen(PORT, HOST, () => {
+  console.log(`Liturgy PPT tool running at http://${HOST}:${PORT}`);
 });
