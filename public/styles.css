@@ -44,7 +44,7 @@ body::after {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background: linear-gradient(180deg, rgba(4, 12, 24, 0.14), rgba(4, 12, 24, 0.28));
+  background: linear-gradient(180deg, rgba(4, 12, 24, 0.86), rgba(4, 12, 24, 0.92));
 }
 
 /* 彩色光团只放在「面板正后方」一个隐藏的居中框里：玻璃能折射到它（彩色玻璃感），
