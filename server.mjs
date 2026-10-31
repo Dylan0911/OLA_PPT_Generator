@@ -325,13 +325,13 @@ async function handleGenerate(req, res) {
   const payloadPath = join(runDir, "sections.json");
   writeFileSync(payloadPath, JSON.stringify(payload, null, 2));
 
-  // 成品命名 = 文档标题 + 「_生成版」（节期/主日与上传文档一致），如「常年期第十二主日_生成版.pptx」。
+  // 成品命名沿用文档标题，如「常年期第十二主日.pptx」。
   const titleForName =
     String(payload.meta.titleCn || "")
       .replace(/[（(][^）)]*[）)]/g, "") // 去（甲年）等括注
       .replace(/[\\/:*?"<>|]/g, "") // 去文件系统非法字符
       .trim() || "弥撒";
-  const outputName = `${titleForName}_生成版.pptx`;
+  const outputName = `${titleForName}.pptx`;
   const outputPath = join(runDir, outputName);
   const stdout = execFileSync(
     process.execPath,

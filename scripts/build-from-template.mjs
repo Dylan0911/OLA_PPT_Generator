@@ -8,6 +8,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { applyThemeToPackage } from "./theme-color.mjs";
 
 const templatePptx = process.argv[2];
 const workDir = process.argv[3];
@@ -770,7 +771,7 @@ function canonicalTxBodyRuns(lines, lang, opts = {}) {
       return `<a:p><a:pPr marL="0" indent="0" algn="${c.algn}">${ln}<a:buNone/></a:pPr>${runsXml}<a:endParaRPr sz="${sz}" dirty="0"/></a:p>`;
     })
     .join("");
-  let bodyPr = `<a:bodyPr${opts.anchor ? ` rtlCol="0" anchor="${opts.anchor}"` : ""}><a:normAutofit/></a:bodyPr>`;
+  let bodyPr = `<a:bodyPr${opts.anchor ? ` rtlCol="0" anchor="${opts.anchor}"` : ""}${opts.noWrap ? ' wrap="none"' : ""}><a:normAutofit/></a:bodyPr>`;
   if (opts.scale && opts.scale < 100) bodyPr = setAutofit(bodyPr, opts.scale);
   return `<p:txBody>${bodyPr}<a:lstStyle/>${paras}</p:txBody>`;
 }
@@ -1093,6 +1094,7 @@ function renderFixedEntry(e) {
   }
   const g3 = structPageGeom("cn", e.baseXml, e.rels, cnId);
   const g4 = structPageGeom("en", e.baseXml, e.rels, enId);
+  const noWrapEnglish = e.lines4.map(lineText).filter(Boolean).join("\n") === "Lord, have mercy.\nChrist, have mercy.\nLord, have mercy.";
   const rows3 = e.lines3.reduce((s, l) => s + rowsOfLine(l, g3.capEm), 0);
   const rows4 = e.lines4.reduce((s, l) => s + rowsOfLine(l, g4.capEm), 0);
   let K = Math.max(1, Math.ceil(rows3 / g3.maxl), Math.ceil(rows4 / g4.maxl));
@@ -1116,7 +1118,7 @@ function renderFixedEntry(e) {
     const s3 = fitScaleForLines(l3, "cn", x, e.rels, cnId);
     const s4 = fitScaleForLines(l4, "en", x, e.rels, enId);
     if (shapeBlockOf(x, cnId)) x = replaceShapeTxBody(x, cnId, canonicalTxBodyRuns(l3, "cn", { scale: s3, fill: e.fill3 }));
-    if (shapeBlockOf(x, enId)) x = replaceShapeTxBody(x, enId, canonicalTxBodyRuns(l4, "en", { scale: s4, fill: e.fill4 }));
+    if (shapeBlockOf(x, enId)) x = replaceShapeTxBody(x, enId, canonicalTxBodyRuns(l4, "en", { scale: s4, fill: e.fill4, noWrap: noWrapEnglish }));
     pages.push({ xml: x, rels: e.rels });
   }
   return pages;
@@ -1820,6 +1822,9 @@ if (existsSync(appPath)) {
   app = app.replace(/<Slides>\d+<\/Slides>/, `<Slides>${kept.length}</Slides>`);
   writeFileSync(appPath, app);
 }
+
+// Recolor after template processing, which identifies some shapes by their original green.
+applyThemeToPackage(work, payload?.meta?.themeColor);
 
 mkdirSync(dirname(outPptx), { recursive: true });
 if (existsSync(outPptx)) rmSync(outPptx);

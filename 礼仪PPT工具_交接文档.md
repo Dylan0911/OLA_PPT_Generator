@@ -74,7 +74,7 @@
 
 ### 标题解析 & 成品命名(server.mjs `parseDocument` / `handleGenerate`)
 - **标题**:取文档第一行中文,`parseDocument` 里清理:去「（甲年）」括注、去破折号后缀、**去结尾无括号的「甲年/乙年/丙年」**(文档常用**全角空格**分隔如 `常年期第十五主日␣␣甲年`,所以不能只靠去括号)。清理后的 `titleCn` 用于封面标题 + 文件名。
-- **成品文件名** = `{titleCn}_生成版.pptx`(节期/主日与文档一致),如 `常年期第十五主日_生成版.pptx`。`handleGenerate` 里 `titleForName` 再去一次括注 + 文件系统非法字符,解析失败兜底叫「弥撒」。下载 header 已处理中文名(ASCII 回退 + `filename*=UTF-8`)。内部 run 目录仍用时间戳,所以同一主日多次生成不会互相覆盖。
+- **成品文件名** = `{titleCn}.pptx`(节期/主日与文档一致),如 `常年期第十五主日.pptx`。`handleGenerate` 里 `titleForName` 再去一次括注 + 文件系统非法字符,解析失败兜底叫「弥撒」。下载 header 已处理中文名(ASCII 回退 + `filename*=UTF-8`)。内部 run 目录仍用时间戳,所以同一主日多次生成不会互相覆盖。
 
 ---
 
